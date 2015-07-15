@@ -1,6 +1,9 @@
 package clock
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 // Now is a proxy for time.Now.
 var Now = time.Now
@@ -23,16 +26,23 @@ func Restore() {
 }
 
 type clock struct {
-	times []time.Time
 	index int
+	times []time.Time
+	lock  *sync.Mutex
 }
 
-func new(times []time.Time) *clock { return &clock{times: times} }
+func new(times []time.Time) *clock { return &clock{times: times, lock: &sync.Mutex{}} }
 func (this *clock) now() time.Time {
+	defer this.incrementAndUnlock()
+	this.lock.Lock()
+	return this.times[this.index]
+}
+
+func (this *clock) incrementAndUnlock() {
+	defer this.lock.Unlock()
+
+	this.index++
 	if this.index >= len(this.times) {
 		this.index = 0
 	}
-	current := this.times[this.index]
-	this.index++
-	return current
 }
