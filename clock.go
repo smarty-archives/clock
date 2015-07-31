@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Now is a proxy for time.Now.
+// Now forwards to time.Now.
 var Now = time.Now
 
 // Freeze uses the times provided as cyclic return values for the Now func.
