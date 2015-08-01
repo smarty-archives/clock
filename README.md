@@ -59,11 +59,3 @@ func (this *Sleeper) Restore()
 ```
 Restore assigns time.Sleep as the value for Sleep. It is intended to be called
 from test code as cleanup after the actions under test have been invoked.
-
-#### func (*Sleeper) Sleep
-
-```go
-func (this *Sleeper) Sleep(nap time.Duration)
-```
-Substitute function for the package-level Sleep. Will be substituted as a result
-of calling FakeSleep().

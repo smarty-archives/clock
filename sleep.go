@@ -16,7 +16,7 @@ func FakeSleep() *Sleeper {
 		Naps: []time.Duration{},
 		lock: &sync.Mutex{},
 	}
-	Sleep = sleeper.Sleep
+	Sleep = sleeper.sleep
 	return sleeper
 }
 
@@ -26,9 +26,7 @@ type Sleeper struct {
 	lock *sync.Mutex
 }
 
-// Substitute function for the package-level Sleep. Will be substituted as a
-// result of calling FakeSleep().
-func (this *Sleeper) Sleep(nap time.Duration) {
+func (this *Sleeper) sleep(nap time.Duration) {
 	defer this.lock.Unlock()
 	this.lock.Lock()
 	this.Naps = append(this.Naps, nap)
