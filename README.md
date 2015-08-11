@@ -6,11 +6,6 @@
 ## Usage
 
 ```go
-var Now = time.Now
-```
-Now forwards to time.Now.
-
-```go
 var Sleep = time.Sleep
 ```
 Sleep forwards to time.Sleep
@@ -24,6 +19,13 @@ Freeze uses the times provided as cyclic return values for the Now func. It is
 intended to be called from test code in order to mock calls to Now in production
 code.
 
+#### func  Now
+
+```go
+func Now() time.Time
+```
+Now forwards to time.Now.
+
 #### func  Restore
 
 ```go
@@ -32,6 +34,13 @@ func Restore()
 Restore discards any values provided to Freeze by assigning time.Now back to
 Now. It is intended to be called from test code as cleanup after the actions
 under test have been invoked.
+
+#### func  UTCNow
+
+```go
+func UTCNow() time.Time
+```
+UTCNow forwards to Now().UTC()
 
 #### type Sleeper
 
