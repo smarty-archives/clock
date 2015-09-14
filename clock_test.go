@@ -25,11 +25,11 @@ func TestActualSleeperInstanceIsUsefulForTesting(t *testing.T) {
 
 	thing := new(ThingUnderTest)
 	now := time.Now().UTC()
-	thing.Sleeper = StayAwake()
+	thing.sleeper = StayAwake()
 	thing.Sleep(time.Hour)
 	now2 := thing.CurrentTime()
 	assertions.New(t).So(now, should.HappenWithin, time.Millisecond, now2)
-	assertions.New(t).So(thing.Sleeper.Naps, should.Resemble, []time.Duration{time.Hour})
+	assertions.New(t).So(thing.sleeper.Naps, should.Resemble, []time.Duration{time.Hour})
 }
 
 func TestActualClockInstanceIsUsefulForTesting(t *testing.T) {
@@ -37,7 +37,7 @@ func TestActualClockInstanceIsUsefulForTesting(t *testing.T) {
 
 	thing := new(ThingUnderTest)
 	now := time.Now().UTC()
-	thing.Clock = Freeze(now)
+	thing.clock = Freeze(now)
 	now2 := thing.CurrentTime()
 	assertions.New(t).So(now, should.Resemble, now2)
 }
@@ -45,14 +45,14 @@ func TestActualClockInstanceIsUsefulForTesting(t *testing.T) {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 type ThingUnderTest struct {
-	*Clock
-	*Sleeper
+	clock   *Clock
+	sleeper *Sleeper
 }
 
 func (this *ThingUnderTest) CurrentTime() time.Time {
-	return this.Clock.UTCNow()
+	return this.clock.UTCNow()
 }
 
 func (this *ThingUnderTest) Sleep(duration time.Duration) {
-	this.Sleeper.Sleep(duration)
+	this.sleeper.Sleep(duration)
 }
