@@ -2,45 +2,45 @@
 --
     import "github.com/smartystreets/clock"
 
+package clock is a drop replacement for time.Now().UTC() and time.Sleep(). The
+structs defined here are intened to be used as pointer fields on structs. When
+nil, these references forward to the corresponding functions in the standard
+time package. When not nil they perform behavior that facilitates unit testing
+when accessing the current time or sleeping is involved. The main advantage to
+this approach is that it is not necessary to provide a non-nil instance in
+'contructor' functions or wireup for production code. It is also still trivial
+to set a non-nil reference in test code.
 
 ## Usage
 
+#### type Clock
+
 ```go
-var Sleep = time.Sleep
+type Clock struct {
+}
 ```
-Sleep forwards to time.Sleep
+
+Clock is meant be included as a pointer field on a struct. Leaving the instance
+as a nil reference will cause any calls on the *Clock to forward to the
+corresponding functions in the standard time package. This is meant to be the
+behavior in production. In testing, set the field to a non-nil instance of a
+*Clock to provide a frozen time instant whenever UTCNow() is called.
 
 #### func  Freeze
 
 ```go
-func Freeze(times ...time.Time)
+func Freeze(instant time.Time) *Clock
 ```
-Freeze uses the times provided as cyclic return values for the Now func. It is
-intended to be called from test code in order to mock calls to Now in production
-code.
+Freeze creates a new *Clock instance with an internal time instant. This
+function is meant to be called from test code. See the godoc for the Clock
+struct for details.
 
-#### func  Now
+#### func (*Clock) UTCNow
 
 ```go
-func Now() time.Time
+func (this *Clock) UTCNow() time.Time
 ```
-Now forwards to time.Now.
-
-#### func  Restore
-
-```go
-func Restore()
-```
-Restore discards any values provided to Freeze by assigning time.Now back to
-Now. It is intended to be called from test code as cleanup after the actions
-under test have been invoked.
-
-#### func  UTCNow
-
-```go
-func UTCNow() time.Time
-```
-UTCNow forwards to Now().UTC()
+UTCNow() -> time.Now().UTC()
 
 #### type Sleeper
 
@@ -50,21 +50,24 @@ type Sleeper struct {
 }
 ```
 
-Sleeper stores calls to Sleep in its Naps slice.
+Sleeper is meant be included as a pointer field on a struct. Leaving the
+instance as a nil reference will cause any calls on the *Sleeper to forward to
+the corresponding functions in the standard time package. This is meant to be
+the behavior in production. In testing, set the field to a non-nil instance of a
+*Sleeper to record sleep durations for later inspection.
 
-#### func  FakeSleep
-
-```go
-func FakeSleep() *Sleeper
-```
-FakeSleep returns a *Sleeper instance and replace Sleep with *Sleeper.Sleep. It
-is intended to be called from test code in order to mock calls to Now in
-production code.
-
-#### func (*Sleeper) Restore
+#### func  StayAwake
 
 ```go
-func (this *Sleeper) Restore()
+func StayAwake() *Sleeper
 ```
-Restore assigns time.Sleep as the value for Sleep. It is intended to be called
-from test code as cleanup after the actions under test have been invoked.
+StayAwake creates a new *Sleeper instance with an internal duration slice. This
+function is meant to be called from test code. See the godoc for the Sleeper
+struct for details.
+
+#### func (*Sleeper) Sleep
+
+```go
+func (this *Sleeper) Sleep(duration time.Duration)
+```
+Sleep -> time.Sleep

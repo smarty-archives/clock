@@ -1,62 +1,66 @@
+// package clock is a drop replacement for time.Now().UTC() and time.Sleep().
+// The structs defined here are intened to be used as pointer fields on structs.
+// When nil, these references forward to the corresponding functions in the
+// standard time package. When not nil they perform behavior that facilitates
+// unit testing when accessing the current time or sleeping is involved.
+// The main advantage to this approach is that it is not necessary to
+// provide a non-nil instance in 'contructor' functions or wireup for
+// production code. It is also still trivial to set a non-nil reference
+// in test code.
 package clock
 
-import (
-	"sync"
-	"time"
-)
+import "time"
 
-// Now forwards to time.Now.
-func Now() time.Time {
-	return now()
+// Clock is meant be included as a pointer field on a struct. Leaving the
+// instance as a nil reference will cause any calls on the *Clock to forward
+// to the corresponding functions in the standard time package. This is meant
+// to be the behavior in production. In testing, set the field to a non-nil
+// instance of a *Clock to provide a frozen time instant whenever UTCNow()
+// is called.
+type Clock struct {
+	instant time.Time
 }
 
-// UTCNow forwards to Now().UTC()
-func UTCNow() time.Time {
-	return now().UTC()
+// Freeze creates a new *Clock instance with an internal time instant.
+// This function is meant to be called from test code. See the godoc for the
+// Clock struct for details.
+func Freeze(instant time.Time) *Clock {
+	return &Clock{instant: instant}
 }
 
-// Freeze uses the times provided as cyclic return values for the Now func.
-// It is intended to be called from test code in order to mock calls to Now
-// in production code.
-func Freeze(times ...time.Time) {
-	if len(times) == 0 {
-		panic("You must provide at least one time value.")
+// UTCNow() -> time.Now().UTC()
+func (this *Clock) UTCNow() time.Time {
+	if this == nil {
+		return time.Now().UTC()
 	}
-	now = new(times).now
+	return this.instant
 }
 
-// Restore discards any values provided to Freeze by assigning time.Now back to Now.
-// It is intended to be called from test code as cleanup after the actions under test
-// have been invoked.
-func Restore() {
-	now = time.Now
+///////////////////////////////////////////////////
+
+// Sleeper is meant be included as a pointer field on a struct. Leaving the
+// instance as a nil reference will cause any calls on the *Sleeper to forward
+// to the corresponding functions in the standard time package. This is meant
+// to be the behavior in production. In testing, set the field to a non-nil
+// instance of a *Sleeper to record sleep durations for later inspection.
+type Sleeper struct {
+	Naps []time.Duration
 }
 
-var now = time.Now
-
-type clock struct {
-	index int
-	times []time.Time
-	lock  *sync.Mutex
+// StayAwake creates a new *Sleeper instance with an internal duration slice.
+// This function is meant to be called from test code. See the godoc for the
+// Sleeper struct for details.
+func StayAwake() *Sleeper {
+	return &Sleeper{}
 }
 
-func new(times []time.Time) *clock {
-	return &clock{
-		times: times,
-		lock:  &sync.Mutex{},
-	}
-}
-func (this *clock) now() time.Time {
-	defer this.incrementAndUnlock()
-	this.lock.Lock()
-	return this.times[this.index]
-}
-
-func (this *clock) incrementAndUnlock() {
-	defer this.lock.Unlock()
-
-	this.index++
-	if this.index >= len(this.times) {
-		this.index = 0
+// Sleep -> time.Sleep
+func (this *Sleeper) Sleep(duration time.Duration) {
+	if this == nil {
+		time.Sleep(duration)
+	} else {
+		this.Naps = append(this.Naps, duration)
 	}
 }
+
+////////////////////////////////////////////////////
