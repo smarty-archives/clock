@@ -42,6 +42,33 @@ func TestActualClockInstanceIsUsefulForTesting(t *testing.T) {
 	assertions.New(t).So(now, should.Resemble, now2)
 }
 
+func TestCyclicNatureOfFrozenClock(t *testing.T) {
+	t.Parallel()
+
+	thing := new(ThingUnderTest)
+	now1 := time.Now()
+	now2 := now1.Add(time.Second)
+	now3 := now2.Add(time.Second)
+
+	thing.clock = Freeze(now1, now2, now3)
+
+	now1a := thing.CurrentTime()
+	now2a := thing.CurrentTime()
+	now3a := thing.CurrentTime()
+
+	assertions.New(t).So(now1, should.Resemble, now1a)
+	assertions.New(t).So(now2, should.Resemble, now2a)
+	assertions.New(t).So(now3, should.Resemble, now3a)
+
+	now1b := thing.CurrentTime()
+	now2b := thing.CurrentTime()
+	now3b := thing.CurrentTime()
+
+	assertions.New(t).So(now1, should.Resemble, now1b)
+	assertions.New(t).So(now2, should.Resemble, now2b)
+	assertions.New(t).So(now3, should.Resemble, now3b)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 type ThingUnderTest struct {

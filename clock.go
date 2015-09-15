@@ -18,14 +18,15 @@ import "time"
 // instance of a *Clock to provide a frozen time instant whenever UTCNow()
 // is called.
 type Clock struct {
-	instant time.Time
+	instants []time.Time
+	index    int
 }
 
 // Freeze creates a new *Clock instance with an internal time instant.
 // This function is meant to be called from test code. See the godoc for the
 // Clock struct for details.
-func Freeze(instant time.Time) *Clock {
-	return &Clock{instant: instant}
+func Freeze(instants ...time.Time) *Clock {
+	return &Clock{instants: instants}
 }
 
 // UTCNow() -> time.Now().UTC()
@@ -33,7 +34,18 @@ func (this *Clock) UTCNow() time.Time {
 	if this == nil {
 		return time.Now().UTC()
 	}
-	return this.instant
+	if len(this.instants) == 0 {
+		return time.Now().UTC()
+	}
+	defer this.next()
+	return this.instants[this.index]
+}
+
+func (this *Clock) next() {
+	this.index++
+	if this.index == len(this.instants) {
+		this.index = 0
+	}
 }
 
 ///////////////////////////////////////////////////
