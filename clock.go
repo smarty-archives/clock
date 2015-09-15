@@ -38,6 +38,13 @@ func (this *Clock) UTCNow() time.Time {
 
 ///////////////////////////////////////////////////
 
+// UTCNow() -> time.Now().UTC()
+func UTCNow() time.Time {
+	return time.Now().UTC()
+}
+
+///////////////////////////////////////////////////
+
 // Sleeper is meant be included as a pointer field on a struct. Leaving the
 // instance as a nil reference will cause any calls on the *Sleeper to forward
 // to the corresponding functions in the standard time package. This is meant
