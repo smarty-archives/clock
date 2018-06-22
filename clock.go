@@ -29,7 +29,7 @@ func Freeze(instants ...time.Time) *Clock {
 	return &Clock{instants: instants}
 }
 
-// UTCNow() -> time.Now().UTC()
+// UTCNow() -> time.Now().UTC() // (unless frozen)
 func (this *Clock) UTCNow() time.Time {
 	if this == nil {
 		return time.Now().UTC()
