@@ -31,11 +31,8 @@ func Freeze(instants ...time.Time) *Clock {
 
 // UTCNow() -> time.Now().UTC() // (unless frozen)
 func (this *Clock) UTCNow() time.Time {
-	if this == nil {
-		return time.Now().UTC()
-	}
-	if len(this.instants) == 0 {
-		return time.Now().UTC()
+	if this == nil || len(this.instants) == 0 {
+		return UTCNow()
 	}
 	defer this.next()
 	return this.instants[this.index]
