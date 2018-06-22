@@ -4,69 +4,77 @@ import (
 	"testing"
 	"time"
 
-	"github.com/smartystreets/assertions"
 	"github.com/smartystreets/assertions/should"
+	"github.com/smartystreets/gunit"
 )
 
-func TestNilReferencesForwardToStandardBehavior(t *testing.T) {
-	t.Parallel()
-
-	thing := new(ThingUnderTest)
-	now := time.Now().UTC()
-	now2 := thing.CurrentTime()
-	thing.Sleep(time.Millisecond * 100)
-	now3 := thing.CurrentTime()
-	assertions.New(t).So(now, should.HappenWithin, time.Millisecond, now2)
-	assertions.New(t).So(now3, should.HappenOnOrAfter, now2.Add(time.Millisecond*100))
+func TestClockFixture(t *testing.T) {
+	gunit.Run(new(ClockFixture), t)
 }
 
-func TestActualSleeperInstanceIsUsefulForTesting(t *testing.T) {
-	t.Parallel()
+type ClockFixture struct {
+	*gunit.Fixture
 
-	thing := new(ThingUnderTest)
-	now := time.Now().UTC()
-	thing.sleeper = StayAwake()
-	thing.Sleep(time.Hour)
-	now2 := thing.CurrentTime()
-	assertions.New(t).So(now, should.HappenWithin, time.Millisecond, now2)
-	assertions.New(t).So(thing.sleeper.Naps, should.Resemble, []time.Duration{time.Hour})
+	now    time.Time
+	thawed *ThingUnderTest
+	frozen *ThingUnderTest
 }
 
-func TestActualClockInstanceIsUsefulForTesting(t *testing.T) {
-	t.Parallel()
-
-	thing := new(ThingUnderTest)
-	now := time.Now().UTC()
-	thing.clock = Freeze(now)
-	now2 := thing.CurrentTime()
-	assertions.New(t).So(now, should.Resemble, now2)
+func (this *ClockFixture) Setup() {
+	this.now = UTCNow()
+	this.thawed = new(ThingUnderTest)
+	this.frozen = new(ThingUnderTest)
+	this.frozen.clock = Freeze(this.now)
+	this.frozen.sleeper = StayAwake()
 }
 
-func TestCyclicNatureOfFrozenClock(t *testing.T) {
-	t.Parallel()
+func (this *ClockFixture) TestNilReferencesForwardToStandardBehavior() {
+	now2 := this.thawed.CurrentTime()
+	this.thawed.Sleep(time.Millisecond * 100)
+	now3 := this.thawed.CurrentTime()
+	this.So(this.now, should.HappenWithin, time.Millisecond, now2)
+	this.So(now3, should.HappenOnOrAfter, now2.Add(time.Millisecond*100))
+	this.So(this.thawed.TimeSince(this.now), should.BeGreaterThan, time.Millisecond*100)
+}
 
-	thing := new(ThingUnderTest)
+func (this *ClockFixture) TestActualSleeperInstanceIsUsefulForTesting() {
+	this.frozen.Sleep(time.Hour)
+	now2 := this.frozen.CurrentTime()
+	this.So(this.now, should.HappenWithin, time.Millisecond, now2)
+	this.So(this.frozen.sleeper.Naps, should.Resemble, []time.Duration{time.Hour})
+}
+
+func (this *ClockFixture) TestActualClockInstanceIsUsefulForTesting() {
+	now2 := this.frozen.CurrentTime()
+	this.So(this.now, should.Resemble, now2)
+}
+
+func (this *ClockFixture) TestTimeSinceWhenFrozen() {
+	this.So(this.frozen.TimeSince(this.now.Add(-time.Second)), should.Equal, time.Second)
+}
+
+func (this *ClockFixture) TestCyclicNatureOfFrozenClock() {
 	now1 := time.Now()
 	now2 := now1.Add(time.Second)
 	now3 := now2.Add(time.Second)
 
-	thing.clock = Freeze(now1, now2, now3)
+	this.thawed.clock = Freeze(now1, now2, now3)
 
-	now1a := thing.CurrentTime()
-	now2a := thing.CurrentTime()
-	now3a := thing.CurrentTime()
+	now1a := this.thawed.CurrentTime()
+	now2a := this.thawed.CurrentTime()
+	now3a := this.thawed.CurrentTime()
 
-	assertions.New(t).So(now1, should.Resemble, now1a)
-	assertions.New(t).So(now2, should.Resemble, now2a)
-	assertions.New(t).So(now3, should.Resemble, now3a)
+	this.So(now1, should.Resemble, now1a)
+	this.So(now2, should.Resemble, now2a)
+	this.So(now3, should.Resemble, now3a)
 
-	now1b := thing.CurrentTime()
-	now2b := thing.CurrentTime()
-	now3b := thing.CurrentTime()
+	now1b := this.thawed.CurrentTime()
+	now2b := this.thawed.CurrentTime()
+	now3b := this.thawed.CurrentTime()
 
-	assertions.New(t).So(now1, should.Resemble, now1b)
-	assertions.New(t).So(now2, should.Resemble, now2b)
-	assertions.New(t).So(now3, should.Resemble, now3b)
+	this.So(now1, should.Resemble, now1b)
+	this.So(now2, should.Resemble, now2b)
+	this.So(now3, should.Resemble, now3b)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,4 +90,8 @@ func (this *ThingUnderTest) CurrentTime() time.Time {
 
 func (this *ThingUnderTest) Sleep(duration time.Duration) {
 	this.sleeper.Sleep(duration)
+}
+
+func (this *ThingUnderTest) TimeSince(instant time.Time) time.Duration {
+	return this.clock.TimeSince(instant)
 }

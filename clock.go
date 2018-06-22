@@ -1,5 +1,5 @@
-// package clock is a drop replacement for time.Now().UTC() and time.Sleep().
-// The structs defined here are intened to be used as pointer fields on structs.
+// package clock is a near drop-in replacement for time.Now().UTC() and time.Sleep().
+// The structs defined here are intended to be used as pointer fields on struct types.
 // When nil, these references forward to the corresponding functions in the
 // standard time package. When not nil they perform behavior that facilitates
 // unit testing when accessing the current time or sleeping is involved.
@@ -43,6 +43,11 @@ func (this *Clock) next() {
 	if this.index == len(this.instants) {
 		this.index = 0
 	}
+}
+
+// Analogous to time.Since(instant) // (unless frozen)
+func (this *Clock) TimeSince(instant time.Time) time.Duration {
+	return this.UTCNow().Sub(instant)
 }
 
 ///////////////////////////////////////////////////

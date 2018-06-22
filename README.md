@@ -2,16 +2,23 @@
 --
     import "github.com/smartystreets/clock"
 
-package clock is a drop replacement for time.Now().UTC() and time.Sleep(). The
-structs defined here are intened to be used as pointer fields on structs. When
-nil, these references forward to the corresponding functions in the standard
-time package. When not nil they perform behavior that facilitates unit testing
-when accessing the current time or sleeping is involved. The main advantage to
-this approach is that it is not necessary to provide a non-nil instance in
-'contructor' functions or wireup for production code. It is also still trivial
-to set a non-nil reference in test code.
+package clock is a near drop-in replacement for time.Now().UTC() and
+time.Sleep(). The structs defined here are intended to be used as pointer fields
+on struct types. When nil, these references forward to the corresponding
+functions in the standard time package. When not nil they perform behavior that
+facilitates unit testing when accessing the current time or sleeping is
+involved. The main advantage to this approach is that it is not necessary to
+provide a non-nil instance in 'contructor' functions or wireup for production
+code. It is also still trivial to set a non-nil reference in test code.
 
 ## Usage
+
+#### func  UTCNow
+
+```go
+func UTCNow() time.Time
+```
+UTCNow() -> time.Now().UTC()
 
 #### type Clock
 
@@ -29,18 +36,25 @@ behavior in production. In testing, set the field to a non-nil instance of a
 #### func  Freeze
 
 ```go
-func Freeze(instant time.Time) *Clock
+func Freeze(instants ...time.Time) *Clock
 ```
 Freeze creates a new *Clock instance with an internal time instant. This
 function is meant to be called from test code. See the godoc for the Clock
 struct for details.
+
+#### func (*Clock) TimeSince
+
+```go
+func (this *Clock) TimeSince(instant time.Time) time.Duration
+```
+Analogous to time.Since(instant) // (unless frozen)
 
 #### func (*Clock) UTCNow
 
 ```go
 func (this *Clock) UTCNow() time.Time
 ```
-UTCNow() -> time.Now().UTC()
+UTCNow() -> time.Now().UTC() // (unless frozen)
 
 #### type Sleeper
 
