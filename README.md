@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/smartystreets/clock.svg?branch=master)](https://travis-ci.org/smartystreets/clock)
+
 # clock
 --
     import "github.com/smartystreets/clock"
