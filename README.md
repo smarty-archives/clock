@@ -49,14 +49,14 @@ struct for details.
 #### func (*Clock) TimeSince
 
 ```go
-func (this *Clock) TimeSince(instant time.Time) time.Duration
+func (it *Clock) TimeSince(instant time.Time) time.Duration
 ```
 Analogous to time.Since(instant) // (unless frozen)
 
 #### func (*Clock) UTCNow
 
 ```go
-func (this *Clock) UTCNow() time.Time
+func (it *Clock) UTCNow() time.Time
 ```
 UTCNow() -> time.Now().UTC() // (unless frozen)
 
@@ -86,6 +86,6 @@ struct for details.
 #### func (*Sleeper) Sleep
 
 ```go
-func (this *Sleeper) Sleep(duration time.Duration)
+func (it *Sleeper) Sleep(duration time.Duration)
 ```
 Sleep -> time.Sleep

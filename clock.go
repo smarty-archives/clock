@@ -30,24 +30,24 @@ func Freeze(instants ...time.Time) *Clock {
 }
 
 // UTCNow() -> time.Now().UTC() // (unless frozen)
-func (this *Clock) UTCNow() time.Time {
-	if this == nil || len(this.instants) == 0 {
+func (it *Clock) UTCNow() time.Time {
+	if it == nil || len(it.instants) == 0 {
 		return UTCNow()
 	}
-	defer this.next()
-	return this.instants[this.index]
+	defer it.next()
+	return it.instants[it.index]
 }
 
-func (this *Clock) next() {
-	this.index++
-	if this.index == len(this.instants) {
-		this.index = 0
+func (it *Clock) next() {
+	it.index++
+	if it.index == len(it.instants) {
+		it.index = 0
 	}
 }
 
 // Analogous to time.Since(instant) // (unless frozen)
-func (this *Clock) TimeSince(instant time.Time) time.Duration {
-	return this.UTCNow().Sub(instant)
+func (it *Clock) TimeSince(instant time.Time) time.Duration {
+	return it.UTCNow().Sub(instant)
 }
 
 ///////////////////////////////////////////////////
@@ -76,11 +76,11 @@ func StayAwake() *Sleeper {
 }
 
 // Sleep -> time.Sleep
-func (this *Sleeper) Sleep(duration time.Duration) {
-	if this == nil {
+func (it *Sleeper) Sleep(duration time.Duration) {
+	if it == nil {
 		time.Sleep(duration)
 	} else {
-		this.Naps = append(this.Naps, duration)
+		it.Naps = append(it.Naps, duration)
 	}
 }
 
