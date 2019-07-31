@@ -1,4 +1,4 @@
-// package clock is a near drop-in replacement for time.Now().UTC() and time.Sleep().
+// Package clock is a near drop-in replacement for time.Now().UTC() and time.Sleep().
 // The structs defined here are intended to be used as pointer fields on struct types.
 // When nil, these references forward to the corresponding functions in the
 // standard time package. When not nil they perform behavior that facilitates
@@ -29,7 +29,7 @@ func Freeze(instants ...time.Time) *Clock {
 	return &Clock{instants: instants}
 }
 
-// UTCNow() -> time.Now().UTC() // (unless frozen)
+// UTCNow is analogous to time.Now().UTC() // (unless frozen)
 func (it *Clock) UTCNow() time.Time {
 	if it == nil || len(it.instants) == 0 {
 		return UTCNow()
@@ -45,14 +45,14 @@ func (it *Clock) next() {
 	}
 }
 
-// Analogous to time.Since(instant) // (unless frozen)
+// TimeSince is analogous to time.Since(instant) // (unless frozen)
 func (it *Clock) TimeSince(instant time.Time) time.Duration {
 	return it.UTCNow().Sub(instant)
 }
 
 ///////////////////////////////////////////////////
 
-// UTCNow() -> time.Now().UTC()
+// UTCNow is analogous to time.Now().UTC() // (unless frozen)
 func UTCNow() time.Time {
 	return time.Now().UTC()
 }
